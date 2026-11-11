@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ground Signal | CCT360</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="level-calm">
+  <div class="page-shake">
+    <header class="site-header">
+      <div class="brand-block">
+        <p class="eyebrow">CCT360 · Designing With Data</p>
+        <h1>Ground Signal</h1>
+        <p class="lede">
+          Live earthquakes from the USGS feed. Magnitude changes the colour,
+          the shake, the sound, and how fast the clip runs.
+        </p>
+      </div>
+      <div class="status-block">
+        <p id="last-updated">Last updated: waiting…</p>
+        <p id="feed-label">Feed: USGS M2.5+ past day</p>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Page controls">
+      <div class="control-group">
+        <p class="control-label">Sound</p>
+        <button id="sound-btn" type="button">Turn sound on</button>
+        <audio id="rumble-audio" src="audio/rumble.wav" loop preload="auto"></audio>
+        <audio id="tick-audio" src="audio/tick.wav" preload="auto"></audio>
+      </div>
+
+      <div class="control-group">
+        <p class="control-label">Minimum magnitude</p>
+        <div class="filter-row" id="mag-filters">
+          <button type="button" class="filter-btn is-active" data-min="2.5">2.5+</button>
+          <button type="button" class="filter-btn" data-min="4">4.0+</button>
+          <button type="button" class="filter-btn" data-min="5">5.0+</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <p class="control-label">Focus</p>
+        <div class="filter-row" id="region-filters">
+          <button type="button" class="region-btn is-active" data-region="all">Worldwide</button>
+          <button type="button" class="region-btn" data-region="americas">Americas</button>
+          <button type="button" class="region-btn" data-region="pacific">Pacific rim</button>
+          <button type="button" class="region-btn" data-region="eurasia">Eurasia / Africa</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="error-box" class="error-box" hidden>
+      <h2>Could not load the live feed</h2>
+      <p id="error-message">
+        Something went wrong talking to the USGS API. Check your connection
+        and refresh the page.
+      </p>
+      <button id="retry-btn" type="button">Try again</button>
+    </section>
+
+    <section class="stats" aria-live="polite">
+      <article class="stat-card">
+        <p class="stat-label">Quakes shown</p>
+        <p class="stat-value" id="stat-count">—</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Strongest mag</p>
+        <p class="stat-value" id="stat-max">—</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Average mag</p>
+        <p class="stat-value" id="stat-avg">—</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Deepest (km)</p>
+        <p class="stat-value" id="stat-depth">—</p>
+      </article>
+    </section>
+
+    <section class="stage">
+      <div class="map-panel">
+        <div class="panel-heading">
+          <h2>Pulse map</h2>
+          <p>Each dot is one quake. Bigger = stronger. Click a dot for details.</p>
+        </div>
+        <div id="quake-map" class="quake-map" aria-label="Map of recent earthquakes">
+          <!-- dots get added by JavaScript -->
+        </div>
+      </div>
+
+      <div class="media-panel">
+        <div class="panel-heading">
+          <h2>Signal desk</h2>
+          <p>Video speed and the photo filter both follow the strongest quake on screen.</p>
+        </div>
+        <div class="media-stack">
+          <video
+            id="ground-video"
+            class="ground-video"
+            src="video/ground-hum.mp4"
+            poster="images/seismo-poster.png"
+            muted
+            loop
+            playsinline
+            autoplay
+          ></video>
+          <img
+            id="signal-image"
+            class="signal-image"
+            src="images/paper-texture.png"
+            alt="Paper texture that gets filtered by earthquake strength"
+          >
+        </div>
+        <div id="detail-panel" class="detail-panel">
+          <p class="detail-kicker">Selected quake</p>
+          <h3 id="detail-title">Pick a dot on the map</h3>
+          <ul class="detail-list">
+            <li><span>Magnitude</span> <strong id="detail-mag">—</strong></li>
+            <li><span>Depth</span> <strong id="detail-depth">—</strong></li>
+            <li><span>When</span> <strong id="detail-time">—</strong></li>
+            <li><span>Felt reports</span> <strong id="detail-felt">—</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="list-section">
+      <div class="panel-heading">
+        <h2>Recent hits</h2>
+        <p>Newest first from the live JSON. Tap one to jump to it on the map.</p>
+      </div>
+      <ul id="quake-list" class="quake-list"></ul>
+    </section>
+
+    <footer class="site-footer">
+      <p>
+        Built for CCT360 by Mahmood, Mohamad, and Haniyyah.
+        Data from the USGS Earthquake Hazards Program.
+      </p>
+      <p>Refreshes every 60 seconds while this tab stays open.</p>
+    </footer>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

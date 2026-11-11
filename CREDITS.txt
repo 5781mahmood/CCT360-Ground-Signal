@@ -1,0 +1,39 @@
+Ground Signal - CCT360 Designing With Data
+Group: Mahmood, Mohamad, Haniyyah
+
+DATA
+- USGS Earthquake Hazards Program
+  Live GeoJSON feed: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson
+  API docs: https://earthquake.usgs.gov/fdsnws/event/1/
+  Public domain U.S. government data. No API key required.
+
+FONTS
+- Syne and IBM Plex Mono from Google Fonts
+  https://fonts.google.com/
+
+MEDIA MADE FOR THIS PROJECT
+- images/paper-texture.png
+  Generated for the project (paper noise texture).
+- images/desk-texture.png
+  Generated for the project (dark map panel texture).
+- images/seismo-poster.png
+  Generated for the project (seismograph-style poster frame).
+- audio/rumble.wav
+  Generated low-frequency rumble loop for data-driven volume.
+- audio/tick.wav
+  Generated short click for interface feedback.
+- video/ground-hum.mp4
+  Short silent loop built from the project poster image.
+  Playback speed is controlled by average magnitude in script.js.
+
+OPTIONAL GROUP MEDIA (swap in anytime)
+- Mohamad / Haniyyah can replace video/ground-hum.mp4 with a phone clip
+  (about 5 to 10 seconds, muted is fine). Keep the same file name.
+- Optional: replace audio/rumble.wav with a recorded room / city /
+  underground ambience. Keep the same file name so the code still works.
+
+CODE REFERENCES USED WHILE BUILDING
+- CCT360 Class 6 slides: arrays and loops
+- CCT360 Class 7 slides: media (audio volume, video playbackRate, filters)
+- CCT360 Class 8 slides: fetch(), async/await, try/catch
+- public-apis list: https://github.com/public-apis/public-apis
