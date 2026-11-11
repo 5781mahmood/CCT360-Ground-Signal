@@ -39,11 +39,9 @@ On your phone, use your computer's local IP on the same wifi, for example `http:
 
 ## Group roles
 
-- **Mahmood** — concept direction, JavaScript / API wiring, GitHub Pages publish
-- **Mohamad** — visual layout / CSS pass, interaction testing on phone, presentation slides
-- **Haniyyah** — media assets review, CREDITS / README polish, recorded video walkthrough support
-
-Update these lines if your split of work changes before submission.
+- **Mahmood** — concept, API, publishing
+- **Mohamad** — layout, CSS, slides
+- **Haniyyah** — JavaScript, media, credits, video
 
 ## Files
 

@@ -13,7 +13,7 @@ FONTS
 
 MEDIA MADE FOR THIS PROJECT
 - images/paper-texture.png
-  Generated for the project (paper noise texture).
+  Coloured paper photo made for the project. The page filter shifts it with magnitude.
 - images/desk-texture.png
   Generated for the project (dark map panel texture).
 - images/seismo-poster.png

@@ -34,6 +34,10 @@ const detailMag = document.querySelector("#detail-mag");
 const detailDepth = document.querySelector("#detail-depth");
 const detailTime = document.querySelector("#detail-time");
 const detailFelt = document.querySelector("#detail-felt");
+const reactingTo = document.querySelector("#reacting-to");
+const clipCaption = document.querySelector("#clip-caption");
+const photoCaption = document.querySelector("#photo-caption");
+const soundCaption = document.querySelector("#sound-caption");
 
 // Class 8 pattern: async/await + try/catch + response.ok
 async function getQuakeData() {
@@ -105,19 +109,23 @@ function applyFilters() {
   }
 
   updateStats();
+
+  // if the quake we were looking at got filtered out, drop back to the strongest
+  if (!findQuakeById(selectedId)) {
+    const strongest = getStrongestQuake();
+    selectedId = strongest ? strongest.id : null;
+  }
+
+  const active = getActiveQuake();
+  if (active) {
+    showQuakeDetails(active);
+  }
+
   updatePageMood();
   drawMapDots();
   drawList();
   updateMediaFromData();
   updateSoundFromData();
-
-  // keep selected quake visible if it still passes the filter
-  if (selectedId) {
-    const stillThere = findQuakeById(selectedId);
-    if (stillThere) {
-      showQuakeDetails(stillThere);
-    }
-  }
 }
 
 function quakeMatchesRegion(quake, region) {
@@ -177,22 +185,66 @@ function updateStats() {
   statDepth.textContent = Math.round(maxDepth);
 }
 
-// colour / shake class on body is driven by the strongest quake showing
+// colour and shake follow the quake you clicked, not the whole list
 function updatePageMood() {
   const body = document.body;
-  body.classList.remove("level-calm", "level-active", "level-strong", "level-severe");
+  const mag = getActiveMagnitude();
 
-  const maxMag = getMaxMagnitude();
+  body.classList.remove("level-calm", "level-mild", "level-active", "level-strong", "level-severe");
 
-  if (maxMag >= 6) {
+  if (mag >= 6) {
     body.classList.add("level-severe");
-  } else if (maxMag >= 5) {
+  } else if (mag >= 5) {
     body.classList.add("level-strong");
-  } else if (maxMag >= 4) {
+  } else if (mag >= 4) {
     body.classList.add("level-active");
+  } else if (mag >= 3) {
+    body.classList.add("level-mild");
   } else {
     body.classList.add("level-calm");
   }
+
+  // steep curve so a 5 or 6 actually rattles the page
+  let shake = 0;
+  if (mag > 2.5) {
+    const above = mag - 2.5;
+    shake = above * above * 1.7;
+  }
+  if (shake > 22) {
+    shake = 22;
+  }
+
+  let pulse = 3.2 - (mag - 2.5) * 0.6;
+  if (pulse < 0.4) {
+    pulse = 0.4;
+  }
+
+  document.documentElement.style.setProperty("--shake-amount", shake.toFixed(1) + "px");
+  document.documentElement.style.setProperty("--pulse-speed", pulse.toFixed(2) + "s");
+
+  const active = getActiveQuake();
+  if (!active) {
+    reactingTo.textContent = "No quakes in this filter.";
+    return;
+  }
+
+  reactingTo.textContent = "Reacting to mag " + active.mag.toFixed(1) + " · " + shakeWord(shake) + " shake";
+}
+
+function shakeWord(shake) {
+  if (shake < 1) {
+    return "still";
+  }
+  if (shake < 4) {
+    return "light";
+  }
+  if (shake < 9) {
+    return "medium";
+  }
+  if (shake < 15) {
+    return "hard";
+  }
+  return "violent";
 }
 
 function getMaxMagnitude() {
@@ -209,6 +261,38 @@ function getMaxMagnitude() {
   }
 
   return maxMag;
+}
+
+function getStrongestQuake() {
+  if (filteredQuakes.length === 0) {
+    return null;
+  }
+
+  let strongest = filteredQuakes[0];
+
+  for (let i = 1; i < filteredQuakes.length; i++) {
+    if (filteredQuakes[i].mag > strongest.mag) {
+      strongest = filteredQuakes[i];
+    }
+  }
+
+  return strongest;
+}
+
+function getActiveQuake() {
+  const picked = findQuakeById(selectedId);
+  if (picked) {
+    return picked;
+  }
+  return getStrongestQuake();
+}
+
+function getActiveMagnitude() {
+  const quake = getActiveQuake();
+  if (!quake) {
+    return 0;
+  }
+  return quake.mag;
 }
 
 function getAverageMagnitude() {
@@ -303,6 +387,9 @@ function selectQuake(id) {
   }
 
   showQuakeDetails(quake);
+  updatePageMood();
+  updateMediaFromData();
+  updateSoundFromData();
   drawMapDots();
   playTick();
 }
@@ -329,41 +416,56 @@ function showQuakeDetails(quake) {
   }
 }
 
-// image filter + video speed follow the data (class 7 / 8 demos)
+// image filter + video speed follow the quake you picked (class 7 / 8 demos)
 function updateMediaFromData() {
-  const maxMag = getMaxMagnitude();
-  const avgMag = getAverageMagnitude();
+  const mag = getActiveMagnitude();
 
-  // stronger quakes push the texture toward a harsher look
-  const gray = Math.min(90, Math.round(maxMag * 12));
-  const bright = Math.max(55, 110 - Math.round(maxMag * 8));
-  const contrast = 90 + Math.round(maxMag * 6);
-  signalImage.style.filter = "grayscale(" + gray + "%) brightness(" + bright + "%) contrast(" + contrast + "%)";
+  // coloured paper, so hue and saturation actually show up
+  const hue = Math.round((mag - 2) * 22);
+  const sat = Math.round(80 + mag * 28);
+  const bright = Math.max(70, Math.round(125 - mag * 8));
+  const contrast = Math.round(95 + mag * 10);
+  signalImage.style.filter = "hue-rotate(" + hue + "deg) saturate(" + sat + "%) brightness(" + bright + "%) contrast(" + contrast + "%)";
+  photoCaption.textContent = "Paper photo: hue " + hue + "°, saturation " + sat + "%";
 
   // playbackRate must stay in a sensible range
-  let speed = avgMag / 2.2;
-  speed = Math.max(0.5, Math.min(speed, 2.8));
+  let speed = 0.45 + (mag - 2.5) * 0.55;
+  speed = Math.max(0.45, Math.min(speed, 2.8));
   groundVideo.playbackRate = speed;
+  clipCaption.textContent = "Clip speed: " + speed.toFixed(1) + "x";
 
-  // try to keep the clip running after refresh
   const playPromise = groundVideo.play();
   if (playPromise !== undefined) {
     playPromise.catch(function () {
-      // autoplay can fail on some phones until the user taps; that is fine
+      clipCaption.textContent = "Clip speed: " + speed.toFixed(1) + "x (tap the page if it stays frozen)";
     });
   }
 }
 
+function volumeForMagnitude(mag) {
+  // quiet for a small quake, full for a big one
+  let volume = (mag - 2.2) / 4.2;
+  volume = Math.max(0.05, Math.min(volume, 1));
+  return volume;
+}
+
 function updateSoundFromData() {
+  const mag = getActiveMagnitude();
+  const volume = volumeForMagnitude(mag);
+  const percent = Math.round(volume * 100);
+
+  rumbleAudio.volume = volume;
+
+  let rate = 0.75 + (mag - 2.5) * 0.18;
+  rate = Math.max(0.75, Math.min(rate, 1.7));
+  rumbleAudio.playbackRate = rate;
+
   if (!soundEnabled) {
+    soundCaption.textContent = "Sound is off. This quake would play at " + percent + "% volume.";
     return;
   }
 
-  const maxMag = getMaxMagnitude();
-  // volume has to stay between 0 and 1
-  let volume = maxMag / 7;
-  volume = Math.max(0.08, Math.min(volume, 1));
-  rumbleAudio.volume = volume;
+  soundCaption.textContent = "Rumble volume: " + percent + "% · speed " + rate.toFixed(2) + "x";
 }
 
 function toggleSound() {
@@ -381,6 +483,7 @@ function toggleSound() {
   } else {
     soundBtn.textContent = "Turn sound on";
     rumbleAudio.pause();
+    updateSoundFromData();
   }
 }
 
