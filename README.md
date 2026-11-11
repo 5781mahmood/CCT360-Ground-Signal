@@ -7,8 +7,8 @@ Live website experience driven by the USGS earthquake feed. Magnitude changes th
 
 ## Live links
 
-- GitHub Pages: *(add after publishing)*
-- Repository: *(add after creating the repo)*
+- GitHub Pages: https://5781mahmood.github.io/CCT360-Ground-Signal/
+- Repository: https://github.com/5781mahmood/CCT360-Ground-Signal
 
 ## What the site does
 
